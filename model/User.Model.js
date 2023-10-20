@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
         type: String, 
     }, 
     photo: String
-})
+}, {timestamps: true})
 
 const userModel = mongoose.model('userModel', userSchema)
 

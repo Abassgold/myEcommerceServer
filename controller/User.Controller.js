@@ -31,26 +31,29 @@ const SignUp = (req, res) => {
     })
 }
 const SignIn = (req, res) => {
-    userModel.findOne({ email: req.body.email })
-        .then((result) => {
-            if (!result) {
-                console.log(`No user found`);
-                return res.status(400).json({ user: `User not found` })
+    let {email, password} = req.body
+    userModel.findOne({email})
+    .then((user)=>{
+        let userpassword = user.password
+        bcrypt.compare(password, userpassword, (err, isMatch)=>{
+            if(err) return console.log(`There is an error while comapring password ${err}`)
+            else{
+                if(isMatch){
+                    jwt.sign({email}, process.env.Secret, {expiresIn : '24h'},(err,token )=>{
+                        if(err) return console.log(err)
+                        if (token) {
+                            console.log(`The token is ${token}`)
+                            return res.json({token})
+                        }
+                        console.log(`No Token generated`)
+                    } )
+                    console.log(`is match ${process.env.Secret}`)
+                }
+                else{
+                    console.log(`Does not match`)
+                }
             }
-            console.log(`the result is ${result}`)
-            bcrypt.compare(req.body.email, result.password, (err, isMatch) => {
-                if (err) {
-                    return console.log(`Error whule comparing password ${err}`)
-                }
-                if (!isMatch) {
-                    return console.log(`Password does not match ${isMatch}, ${req.body.password}`)
-                }
-                console.log(isMatch);
-            })
         })
-        .catch(err => {
-            cosnole.log(`Error while searching ${err}`)
-        })
-    console.log(req.body)
+    })
 }
 module.exports = { SignUp, SignIn }
