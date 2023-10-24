@@ -7,7 +7,7 @@ const app = express();
 let port = process.env.port;
 let URI = process.env.URI
 let productURI = process.env.productURI
-app.listen(port, e=>{
+const connection = app.listen(port, e=>{
     console.log(`server connected at ${port}`)
  })
  mongoose.connect(URI ).then(e=>{
@@ -19,4 +19,19 @@ app.use(cors())
 app.use(express.urlencoded({extended: true, limit:'10mb'}));
 app.use(express.json({limit:'10mb'}));
 app.use('/user', Route)
+
+const serverSocket = require('socket.io')
+const io = serverSocket(connection, {
+    cors:{origin:'*'}
+})
+io.on('connection', (socket)=>{
+    console.log(`A user connected`)
+    socket.on('sendMessage', (payload)=>{
+        console.log(payload);
+    })
+    socket.on('disconnect', ()=>{
+        console.log('A user disconnected')
+    })
+})
+
 

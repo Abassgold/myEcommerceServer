@@ -1,0 +1,22 @@
+const connectedUsers = [];
+
+io.on('connection', (socket) => {
+    // Check if the user is already in the connectedUsers array
+    if (!connectedUsers.includes(socket.id)) {
+        connectedUsers.push(socket.id);
+        console.log('A user connected');
+    }
+
+    socket.on('sendMessage', (payload) => {
+        console.log(payload);
+    });
+
+    socket.on('disconnect', () => {
+        // Remove the user from the connectedUsers array upon disconnect
+        const index = connectedUsers.indexOf(socket.id);
+        if (index !== -1) {
+            connectedUsers.splice(index, 1);
+            console.log('A user disconnected');
+        }
+    });
+});
