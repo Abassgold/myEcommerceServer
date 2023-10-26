@@ -4,5 +4,4 @@ const Route = express.Router()
 
 Route.post('/signup', SignUp);
 Route.post('/signin', SignIn)
-
 module.exports = {Route}

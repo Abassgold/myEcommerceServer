@@ -34,6 +34,11 @@ const SignIn = (req, res) => {
     let {email, password} = req.body
     userModel.findOne({email})
     .then((user)=>{
+        if(!user){
+            console.log(`User not found`)
+            res.status(400).json({msg: 'User not found'})
+            return;
+        }
         let userpassword = user.password
         bcrypt.compare(password, userpassword, (err, isMatch)=>{
             if(err) return console.log(`There is an error while comapring password ${err}`)
@@ -51,6 +56,7 @@ const SignIn = (req, res) => {
                 }
                 else{
                     console.log(`Does not match`)
+                    return res.json(400).json({mssg: 'Incorrect password'})
                 }
             }
         })

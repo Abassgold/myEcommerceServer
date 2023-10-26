@@ -20,18 +20,18 @@ app.use(express.urlencoded({extended: true, limit:'10mb'}));
 app.use(express.json({limit:'10mb'}));
 app.use('/user', Route)
 
-const serverSocket = require('socket.io')
-const io = serverSocket(connection, {
-    cors:{origin:'*'}
-})
-io.on('connection', (socket)=>{
-    console.log(`A user connected`)
-    socket.on('sendMessage', (payload)=>{
-        console.log(payload);
-    })
-    socket.on('disconnect', ()=>{
-        console.log('A user disconnected')
-    })
-})
+// const serverSocket = require('socket.io')
+// const io = serverSocket(connection, {
+//     cors:{origin:'*'}
+// })
+// io.on('connection', (socket)=>{
+//     console.log(`A user connected`)
+//     socket.on('sendMessage', (payload)=>{
+//         console.log(payload);
+//     })
+//     socket.on('disconnect', ()=>{
+//         console.log('A user disconnected')
+//     })
+// })
 
 
