@@ -19,6 +19,7 @@ app.use(cors())
 app.use(express.urlencoded({extended: true, limit:'10mb'}));
 app.use(express.json({limit:'10mb'}));
 app.use('/user', Route)
+app.use('/admin', Route)
 
 // const serverSocket = require('socket.io')
 // const io = serverSocket(connection, {
