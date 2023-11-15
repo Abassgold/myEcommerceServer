@@ -47,7 +47,7 @@ const SignIn = (req, res) => {
                             if (err) return console.log(err)
                             if (token) {
                                 console.log(`The token is ${token}`)
-                                return res.json({ token })
+                                return res.json(toke)
                             }
                             console.log(`No Token generated`)
                         })
@@ -109,8 +109,33 @@ function getSingleProduct(req, res) {
             console.log(`Error while fetching single product ${err}`);
         })
 };
-const updateProduct =(req, res)=>{
+const updateProduct = async(req, res)=>{
+    const {id} = req.params
 
+    try {
+        const response = await productModel.findByIdAndUpdate(id, req.body)
+        res.json(response)
+    } catch (err) {
+        console.log(`Cannot update ${err}`);
+        res.status(500).json({error: 'something went wrong'})
+    }
+}
+const deleteProduct = async function(req, res){
+    const {id} = req.params
+    const product = await productModel.findById(id)
+    if(!product){
+        console.log(`No result found ${product}`);
+        res.json({msg: `No result found`})
+        return;
+    }
+    try{
+        const response = await productModel.findByIdAndDelete(id)
+        res.status(200).json({msg: `Product deleted successfully`})
+        console.log(`product deleted successfully`);
+    }catch (err){
+        console.log(`Something went wrong ${err}`);
+        res.status(500).json({msg: `Something went wrong`})
+    }
 }
 module.exports = {
     SignUp,
@@ -118,5 +143,6 @@ module.exports = {
     admin,
     getProducts,
     getSingleProduct,
-    updateProduct
+    updateProduct,
+    deleteProduct
 }
