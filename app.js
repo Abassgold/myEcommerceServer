@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors')
 const mongoose = require('mongoose');
-const {Route} = require('./route/User.Router')
+const {Route} = require('./route/User.Router');
+const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const app = express();
 let port = process.env.port;
@@ -18,6 +19,7 @@ const connection = app.listen(port, e=>{
 app.use(cors())
 app.use(express.urlencoded({extended: true, limit:'10mb'}));
 app.use(express.json({limit:'10mb'}));
+app.use(cookieParser())
 app.use('/user', Route)
 app.use('/admin', Route)
 

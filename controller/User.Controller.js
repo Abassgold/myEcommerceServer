@@ -35,7 +35,7 @@ const SignIn = (req, res) => {
         .then((user) => {
             if (!user) {
                 console.log(`User not found`)
-                res.status(400)
+                res.status(400).json({ msg: 'user not found' })
                 return;
             }
             let userpassword = user.password
@@ -47,15 +47,15 @@ const SignIn = (req, res) => {
                             if (err) return console.log(err)
                             if (token) {
                                 console.log(`The token is ${token}`)
-                                return res.json(toke)
+                                return res.status(200).cookie('token', token, { httpOnly: true }).json({ msg: 'Login successful', token});
                             }
                             console.log(`No Token generated`)
                         })
-                        console.log(`is match ${process.env.Secret}`)
                     }
                     else {
-                        console.log(`Does not match`)
-                        return res.json(400).json({ mssg: 'Incorrect password' })
+                        console.log(`Incorrect password`)
+                        res.json({ msg: 'Incorrect password' })
+                        return;
                     }
                 }
             })
@@ -105,37 +105,41 @@ function getSingleProduct(req, res) {
                 result
             })
         })
-        .catch((err)=>{
+        .catch((err) => {
             console.log(`Error while fetching single product ${err}`);
         })
 };
-const updateProduct = async(req, res)=>{
-    const {id} = req.params
+const updateProduct = async (req, res) => {
+    const { id } = req.params
 
     try {
         const response = await productModel.findByIdAndUpdate(id, req.body)
         res.json(response)
     } catch (err) {
         console.log(`Cannot update ${err}`);
-        res.status(500).json({error: 'something went wrong'})
+        res.status(500).json({ error: 'something went wrong' })
     }
 }
-const deleteProduct = async function(req, res){
-    const {id} = req.params
+const deleteProduct = async function (req, res) {
+    const { id } = req.params
     const product = await productModel.findById(id)
-    if(!product){
+    if (!product) {
         console.log(`No result found ${product}`);
-        res.json({msg: `No result found`})
+        res.json({ msg: `No result found` })
         return;
     }
-    try{
+    try {
         const response = await productModel.findByIdAndDelete(id)
-        res.status(200).json({msg: `Product deleted successfully`})
+        res.status(200).json({ msg: `Product deleted successfully` })
         console.log(`product deleted successfully`);
-    }catch (err){
+    } catch (err) {
         console.log(`Something went wrong ${err}`);
-        res.status(500).json({msg: `Something went wrong`})
+        res.status(500).json({ msg: `Something went wrong` })
     }
+}
+const getDashboard = (req, res)=>{
+    let {token} = req.cookies
+    console.log(req.cookies);
 }
 module.exports = {
     SignUp,
@@ -144,5 +148,6 @@ module.exports = {
     getProducts,
     getSingleProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getDashboard
 }
