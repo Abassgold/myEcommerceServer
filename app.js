@@ -8,18 +8,16 @@ const app = express();
 let port = process.env.port;
 let URI = process.env.URI
 let productURI = process.env.productURI
-const connection = app.listen(port, e=>{
-    console.log(`server connected at ${port}`)
- })
- mongoose.connect(URI ).then(e=>{
+ mongoose.connect(URI).then(e=>{
     console.log(`Database connected`);
+    app.listen(port)
 }).catch(e=>{
     console.log(`Error occured while connecting to the database, ${e}`);
 })
 app.use(cors())
+app.use(cookieParser())
 app.use(express.urlencoded({extended: true, limit:'10mb'}));
 app.use(express.json({limit:'10mb'}));
-app.use(cookieParser())
 app.use('/user', Route)
 app.use('/admin', Route)
 
