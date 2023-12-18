@@ -212,7 +212,7 @@ async function getRestPassword(req, res) {
         let newScreteLink = process.env.Secret + response.email + response.password + response._id
         const decoded = await jwt.verify(token, newScreteLink);
         let updatedPassword = await bcrypt.hash(req.body.password, 10)
-        let update = await userModel.findByIdAndUpdate(id, { password: updatedPassword})
+        let update = await userModel.findByIdAndUpdate(id, { password: updatedPassword })
         res.status(200).json({
             msg: 'password reset succesfully',
             decoded,
@@ -227,23 +227,57 @@ async function getRestPassword(req, res) {
         return;
     }
 }
-const updatePassword = async(req, res)=>{
-    const {id, oldPassword, newPassword} = req.body
-    try{
+const updatePassword = async (req, res) => {
+    const { id, oldPassword, newPassword } = req.body
+    try {
         const response = await userModel.findById(id)
         const isMatch = await bcrypt.compare(oldPassword, response.password)
-        if(!(isMatch)){
-            res.json({msg: 'Old password is incorrect', isMatch})
+        if (!(isMatch)) {
+            res.json({ msg: 'Old password is incorrect', isMatch })
             return;
         }
         const hashed = await bcrypt.hash(newPassword, 10)
-        const update = await userModel.findByIdAndUpdate(id, {password: hashed})
-        res.json({update})
-    }catch(err){
-        res.joson({status: 400, msg: err.message})
+        const update = await userModel.findByIdAndUpdate(id, { password: hashed })
+        res.json({ update })
+    } catch (err) {
+        res.joson({ status: 400, msg: err.message })
     }
 }
+const getAllUsers = async (req, res) => {
+    const users = await userModel.find()
+    if (!(users.length > 0)) {
+        res.json({ msg: 'No users found' })
+        return;
+    }
+    res.status(200).json({
+        success: true,
+        users
+    })
+}
+const getSingleUser = (req, res) => {
+    const { id } = req.params;
+    console.log(id);
+    userModel.findById(id)
+        .then((user) => {
+            console.log(user);
+            if (!user) {
+                res.status(404).json({
+                    msg: 'User not found'
+                })
+                return;
+            }
+            res.status(200).json({
+                success: true,
+                user
+            })
+        })
+        .catch((err) => {
+            res.json({ msg: err.message })
+        })
+}
 module.exports = {
+    getSingleUser,
+    getAllUsers,
     SignUp,
     SignIn,
     logOut,

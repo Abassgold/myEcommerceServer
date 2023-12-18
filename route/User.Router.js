@@ -13,7 +13,9 @@ const {
     logOut,
     getRestPassword,
     forgotPassword,
-    updatePassword
+    updatePassword,
+    getAllUsers,
+    getSingleUser
 } = require('../controller/User.Controller')
 
 Route.post('/signup', SignUp);
@@ -28,5 +30,6 @@ Route.delete('/delete-product/:id', deleteProduct)
 Route.post('/forgot-password', forgotPassword)
 Route.post('/reset-password/:id/:token', getRestPassword)
 Route.patch('/password/update', updatePassword)
-
+Route.get('/users', getAllUsers)
+Route.get('/users/:id', getSingleUser)
 module.exports = { Route }
