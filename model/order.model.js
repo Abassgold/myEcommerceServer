@@ -30,7 +30,9 @@ const oderSchema = new mongoose.Schema({
     },
     orderItems: [
         {
-            name: { 
+            name: {
+                type: String,
+                required:  true,
             },
             quantity: {
                 type: Number,
