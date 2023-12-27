@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors')
 const mongoose = require('mongoose');
-const {Route} = require('./route/User.Router');
+const userRoute = require('./route/User.Router');
+const productRoute = require('./route/Product.Router');
 const orderRoutes = require('./route/Order.Router');
 const cookieParser = require('cookie-parser')
 require('dotenv').config()
@@ -19,8 +20,8 @@ app.use(cors())
 app.use(cookieParser())
 app.use(express.urlencoded({extended: true, limit:'10mb'}));
 app.use(express.json({limit:'10mb'}));
-app.use('/user', Route)
-app.use('/admin', Route)
+app.use('/user', userRoute)
+app.use('/admin', productRoute)
 app.use('/order', orderRoutes)
 
 // const serverSocket = require('socket.io')

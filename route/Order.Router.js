@@ -14,4 +14,4 @@ Router.post('/myOrder/me', myOrders)
 Router.get('/orders', getallOrders)
 Router.put('/orders/:id', allOrders)
 Router.delete('/orders/:id', deleteOrder)
-module.exports = Router
+module.exports = Router;
