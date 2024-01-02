@@ -75,6 +75,60 @@ const deleteProduct = async function (req, res) {
         res.status(500).json({ msg: `Something went wrong` })
     }
 }
+// Create new review
+
+const createproductReview = async (req, res) => {
+    const { rating, comment, productId, userId, userName } = req.body;
+    const review = {
+        user: userId,
+        name: userName,
+        rating: Number(rating),
+        comment
+    }
+    console.log(review)
+    const product = await productModel.findById(productId)
+    console.log(product);
+    const isReviewed = product.reviews.find(review => review.user.toString() === userId.toString());
+    if (isReviewed) {
+        product.reviews.map((review) => {
+            if (review.user.toString() === userId.toString()) {
+                review.comment = comment.toString();
+                review.rating = rating;
+            }
+        })
+    }
+    else {
+        product.reviews.push(review);
+    }
+    product.numOfReviews = product.reviews.length;
+    product.ratings = product.reviews.reduce((acc, items) => {
+        return items.rating + acc
+    }, 0) / product.reviews.length;
+    await product.save();
+    res.json({
+        success: true,
+        reviews: product.reviews
+    })
+}
+
+const deleteProductReview = async function (req, res) {
+    const { reviewId } = req.body;
+    const product = await productModel.findById(req.params.id);
+    const reviews = product.reviews.filter(review => review._id.toString() !== reviewId.toString());
+    const numOfReviews = reviews.length;
+    const ratings = reviews.reduce((acc, items) => {
+        return items.rating + acc
+    }, 0) / product.reviews.length;
+    await productModel.findByIdAndUpdate(req.params.id, {
+        reviews,
+        ratings,
+        numOfReviews
+    })
+    res.status(200).json({
+        succes: true,
+        reviews: product.reviews
+    })
+}
 
 module.exports = {
     admin,
@@ -82,4 +136,6 @@ module.exports = {
     getSingleProduct,
     updateProduct,
     deleteProduct,
+    createproductReview,
+    deleteProductReview,
 }

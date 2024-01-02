@@ -72,6 +72,11 @@ const productSchema = new mongoose.Schema({
     },
     reviews:[
         {
+            user:{
+                type: mongoose.Schema.ObjectId,
+                ref: 'user',
+                required: true
+            },
             name:{
                 type:String,
                 required: true
@@ -93,4 +98,4 @@ const productSchema = new mongoose.Schema({
 })
 
 const productModel = mongoose.model('productModel', productSchema)
-module.exports = productModel
+module.exports = productModel;
