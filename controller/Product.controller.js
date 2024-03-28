@@ -11,15 +11,51 @@ const admin = (req, res) => {
             console.log('product cannot save' + err);
         })
 }
-const getProducts = (req, res) => {
-    productModel.find()
+const getProducts = async (req, res) => {
+    const { page, filter } = req.query;
+    const limit = 3 ;
+    const skip = (page - 1) * limit;
+    const totalProducts = await productModel.countDocuments();
+    if(filter){
+        productModel.find()
         .then((result) => {
-            console.log(result);
+            let filteredResult = result;
+
+        if (filter) {
+            filteredResult = result.filter(item => {
+                return item.product.toLowerCase().includes(filter.toLowerCase());
+            });
+        }
+
+        const totalFilteredProducts = filteredResult.length;
+        const paginatedResult = filteredResult.slice(skip, skip + limit);
+
+        setTimeout(() => {
             res.json({
-                succes: true,
-                count: result.length,
-                result
-            })
+                success: true,
+                productCount: totalFilteredProducts,
+                totalPages: Math.ceil(totalFilteredProducts / limit),
+                result: paginatedResult
+            });
+        }, 1000);
+        })
+        .catch((err) => {
+            console.log(`error while fetching products ${err}`);
+        })
+        return;
+    }
+    productModel.find()
+        .skip(skip)
+        .limit(limit)
+        .then((result) => {
+            setTimeout(() => {
+                res.json({
+                    succes: true,
+                    productCount: totalProducts,
+                    totalPages : Math.ceil(totalProducts / limit),
+                    result
+                })
+            }, 1000);
         })
         .catch((err) => {
             console.log(`error while fetching products ${err}`);
@@ -38,10 +74,12 @@ function getSingleProduct(req, res) {
                 })
                 return;
             }
-            res.status(200).json({
-                succes: true,
-                result
-            })
+            setTimeout(() => {
+                res.status(200).json({
+                    succes: true,
+                    result
+                })
+            }, 2000);
         })
         .catch((err) => {
             console.log(`Error while fetching single product ${err}`);
