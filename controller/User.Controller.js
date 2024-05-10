@@ -1,27 +1,44 @@
-const  userModel = require('../model/User.Model')
+const userModel = require('../model/User.Model')
 const nodeMailer = require('nodemailer')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const cloudinary = require('cloudinary')
+
 require('dotenv').config()
 cloudinary.config({
     cloud_name: process.env.cloud_name,
     api_key: process.env.api_key,
     api_secret: process.env.api_secret
 });
-const SignUp = (req, res) => {
+const SignUp = async (req, res) => {
     let { firstName, lastName, email, password, photo } = req.body
-
+    const found = await userModel.findOne({ email: req.body.email.toLowerCase() })
+    console.log(`the result is ${found}`);
+    if (found) {
+        console.log(`Email already been register with another account`);
+        return res.status(200).json({ msg: `Email already registered with another account`, success: false })
+    }
     bcrypt.hash(password, 10, (err, hashed) => {
         if (err) return console.log(`password cannot hash ${err}`)
         cloudinary.v2.uploader.upload(photo, (err, result) => {
             if (err) return console.log(`File could not be uploaded`);
+            console.log(result);
             let myFile = result.secure_url
-            const model = new userModel({ firstName, lastName, email, password: hashed, photo: myFile })
+            const model = new userModel({
+                firstName,
+                lastName,
+                email: email.toLowerCase(),
+                password: hashed,
+                photo: {
+                    public_id: result.public_id,
+                    url: myFile
+                }
+            })
+
             model.save()
                 .then(e => {
                     console.log(`saved to database, ${hashed}`)
-                    res.status(200).json({ mssg: "Welcome", message: "Uploaded successfully" })
+                    res.status(200).json({ success: true })
                 })
                 .catch((err) => {
                     console.log('cannot save to database' + err);
@@ -32,11 +49,14 @@ const SignUp = (req, res) => {
 }
 const SignIn = (req, res) => {
     let { email, password } = req.body
-    userModel.findOne({ email })
+    console.log(`the inputs are ${email} and ${password}`);
+    userModel.findOne({ email: email.toLowerCase() })
         .then((user) => {
             if (!user) {
-                console.log(`User not found`)
-                res.status(400).json({ msg: 'user not found' })
+                setTimeout(() => {
+                    console.log(`User not found`)
+                    res.status(200).json({ msg: 'user not found', success: false })
+                }, 2000);
                 return;
             }
             let userpassword = user.password
@@ -44,18 +64,27 @@ const SignIn = (req, res) => {
                 if (err) return console.log(`Error while comapring password ${err}`)
                 else {
                     if (isMatch) {
-                        jwt.sign({ email }, process.env.Secret, { expiresIn: '24h' }, (err, token) => {
+                        jwt.sign({ email: email.toLowerCase() }, process.env.Secret, { expiresIn: '24h' }, (err, token) => {
                             if (err) return console.log(err)
                             if (token) {
-                                console.log(`The token is ${token}`)
-                                return res.status(200).json({ msg: 'Login successful', token });
+                                const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                setTimeout(() => {
+                                    console.log(`The token is ${token}`)
+                                    return res.status(200)
+                                        .cookie('token', token, {
+                                            expires: expiryDate,
+                                            httpOnly: true
+                                        })
+                                        .json({ msg: 'Login successful', token, success: true, user });
+                                }, 2000);
                             }
-                            console.log(`No Token generated`)
                         })
                     }
                     else {
-                        console.log(`Incorrect password`)
-                        res.json({ msg: 'Incorrect password' })
+                        setTimeout(() => {
+                            console.log(`Incorrect password`)
+                            res.status(400).json({ msg: 'Incorrect password', success: false })
+                        }, 2000);
                         return;
                     }
                 }
@@ -66,15 +95,18 @@ const SignIn = (req, res) => {
 const getDashboard = (req, res) => {
     const { authorization } = req.headers;
     let token = authorization.split(' ')[1];
+    console.log(token);
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
-            res.json({ msg: `Log in first ${err.message}` })
+            res.json({ msg: `Log in first ${err.message}`, success: false })
+            console.log(token)
+            console.log(err.message);
             return;
         }
-        console.log(decoded);
+        console.log(decoded.email);
         userModel.findOne({ email: decoded.email })
             .then((user) => {
-                res.json(user);
+                res.json({ user, success: true });
             })
             .catch((err) => {
                 console.log(`error while finding user ${err.message}`);
@@ -95,16 +127,17 @@ const logOut = (req, res) => {
         })
     console.log(req.cookies.token);
 }
-
 const forgotPassword = async function (req, res) {
     let { email } = req.body
+    console.log(email)
     // create one time link that is valid for 5mins
     try {
-        const response = await userModel.findOne({ email })
+        const response = await userModel.findOne({ email: email.toLowerCase() })
         console.log(response);
         if (!response) {
-            res.status(400).json({
-                msg: 'User not registered'
+            res.status(200).json({
+                msg: 'Email is not registered',
+                success: false
             })
             return;
         }
@@ -112,60 +145,114 @@ const forgotPassword = async function (req, res) {
             password: response.password,
             id: response._id
         }
-        let newScreteLink = process.env.Secret + response.email + response.password + response._id
-        const token = await jwt.sign(payload, newScreteLink, { expiresIn: '5m' })
-        const link = `http://localhost:5000/user/reset-password/${response._id}/${token}`
-        res.json({
-            msg: 'Password reset link sent to your email',
-            token,
+        let newScreteLink = process.env.Secret + response.email + response.password + response._id;
+        const token = await jwt.sign(payload, newScreteLink, { expiresIn: '20m' })
+        const dotlessToken = token.replace(/\./g, '*')
+        console.log(dotlessToken);
+        const link = `http://localhost:5173/reset-password/${response._id}/${dotlessToken}`
+        res.status(200).json({
+            success: true,
             link
         })
-        console.log(link);
+        console.log({link});
+        console.log(token);
     } catch (error) {
         console.log(error.message);
     }
 }
 async function getRestPassword(req, res) {
-    let { id, token } = req.params;
-    console.log(req.body.password);
     try {
+        let { id, token } = req.params;
+        const dotToken = token.replace(/\*/g, '.')
         const response = await userModel.findById(id)
         if (!response) {
-            res.json({ msg: 'No such user' })
+            return res.status(200).json({ msg: 'No such user', success: false })
+        }
+        console.log(response);
+        // console.log(dotToken);
+        let newScreteLink = process.env.Secret + response.email + response.password + response._id
+        console.log(newScreteLink);
+        const decoded = await jwt.verify(dotToken, newScreteLink);
+        console.log(decoded);
+        if(decoded){
+            res.status(200).json({
+                success: true,
+            })
             return;
         }
-        let newScreteLink = process.env.Secret + response.email + response.password + response._id
-        const decoded = await jwt.verify(token, newScreteLink);
-        let updatedPassword = await bcrypt.hash(req.body.password, 10)
-        let update = await userModel.findByIdAndUpdate(id, { password: updatedPassword })
-        res.status(200).json({
-            msg: 'password reset succesfully',
-            decoded,
-            update
-        })
     } catch (error) {
-        console.log(error.message);
-        res.status(400).json({
+        console.log(`The mess ofjj ${error.message}`);
+       return res.status(200).json({
             msg: 'The link is expired. Please try again',
-            error: error.message
+            error: error.message,
+            success: false
         })
-        return;
+    }
+}
+async function resetPassword(req, res) {
+    try {
+    const { password, confirmPassword } = req.body;
+    const {id, token} = req.params;
+
+        if (!(password && confirmPassword)) {
+            console.log('Fill in all emptyspaces ');
+            res.status(200).json({success: false, msg: `Fill in empty spaces`});
+            return;
+        }
+        const trimmedBody = {};
+        for (const key in req.body) {
+            trimmedBody[key] = req.body[key].trim();
+        }
+        console.log(trimmedBody);
+        console.log(req.params);
+        if (trimmedBody.password === '') {
+            res.status(200).json({msg : 'Space cannot be empty', success: false})
+            return console.log('Space cannot be empty');
+        }
+        if (trimmedBody.confirmPassword === '') {
+            res.status(200).json({msg : 'Space cannot be empty', success : false})
+            return console.log('Space cannot be empty');
+        }
+        if (!(trimmedBody.password === trimmedBody.confirmPassword)) {
+            res.status(200).json({msg : 'Password does not match', success: false})
+            return console.log('Password does not match')
+        }
+        const  response = await userModel.findById(id);
+        if(response){
+            const newSecretLink = process.env.Secret + response.email + response.password + response._id;
+            const decoded = await jwt.verify(token, newSecretLink);
+            console.log(decoded);
+        
+            // Update the user's password
+            const hashedPassword = await bcrypt.hash(confirmPassword, 10);
+            
+            const updatePassword =  await userModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+        
+            console.log(updatePassword);
+        }
+        else {
+            return res.status(200).json({ msg: 'User not found', success: false });
+        }
+
+    } catch (err) {
+        console.log(` the err is ${err.message}`);
+        res.status(200).json({ msg : err.message, success : false});
     }
 }
 const updatePassword = async (req, res) => {
     const { id, oldPassword, newPassword } = req.body
+    console.log(req.body);
     try {
         const response = await userModel.findById(id)
         const isMatch = await bcrypt.compare(oldPassword, response.password)
         if (!(isMatch)) {
-            res.json({ msg: 'Old password is incorrect', isMatch })
-            return;
+            return res.status(200).json({ msg: 'Old password is incorrect', success: false });
         }
         const hashed = await bcrypt.hash(newPassword, 10)
         const update = await userModel.findByIdAndUpdate(id, { password: hashed })
-        res.json({ update })
+        res.status(200).json({ msg: 'password updates successfully', success: true })
     } catch (err) {
-        res.joson({ status: 400, msg: err.message })
+        res.json({ status: false, msg: err.message })
     }
 }
 const getAllUsers = async (req, res) => {
@@ -200,6 +287,33 @@ const getSingleUser = (req, res) => {
             res.json({ msg: err.message })
         })
 }
+const editprofile = async (req, res) => {
+    const { id, firstName, email, lastName, photo } = req.body;
+    try {
+        const picId = await userModel.findById(id);
+        if (!picId) {
+            return res.status(200).json({ success: false, msg: 'user not found' })
+        }
+        const newUser = {
+            firstName,
+            lastName,
+            email: email.toLowerCase()
+        }
+        const newPicid = await cloudinary.v2.uploader.upload(photo);
+        newUser.photo = {
+            public_id: newPicid.public_id,
+            url: newPicid.secure_url
+        }
+        const editedProfileResult = await userModel.findByIdAndUpdate(id, newUser)
+        const token = await jwt.sign({ email: email.toLowerCase() }, process.env.Secret, { expiresIn: '24h' });
+        res.status(200).json({ success: true, token });
+    } catch (error) {
+        console.log(`the error is ${error.message}`);
+        if (error) {
+            res.status(200).json({ success: false })
+        }
+    }
+}
 module.exports = {
     getSingleUser,
     getAllUsers,
@@ -209,5 +323,7 @@ module.exports = {
     getDashboard,
     getRestPassword,
     forgotPassword,
-    updatePassword
+    updatePassword,
+    editprofile,
+    resetPassword
 }

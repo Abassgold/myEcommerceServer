@@ -10,9 +10,22 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String, 
     }, 
-    photo: String
+    photo:{
+            public_id:{
+                type:String,
+                required: true
+            },
+            url:{
+                type:String,
+                required: true
+            }
+    }
 }, {timestamps: true})
+userSchema.pre('save', function(next){
+    this.email = this.email.toLowerCase();
+    next();
 
+})
 
 const userModel = mongoose.model('userModel', userSchema)
 module.exports = userModel
