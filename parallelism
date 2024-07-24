@@ -1,0 +1,36 @@
+const { Worker } = require('worker_threads');
+
+const tasks = [100000000, 100000000, 100000000, 100000000]; // Sample CPU-intensive calculations
+
+function calculate(number) {
+  let result = 0;
+  for (let i = 0; i < number; i++) {
+    result += Math.random() * 100;
+  }
+  return result;
+}
+
+const workers = [];
+const results = [];
+
+for (const task of tasks) {
+  const worker = new Worker('./worker.js', { workerData: task });
+  workers.push(worker);
+
+  worker.on('message', (result) => {
+    results.push(result);
+  });
+}
+
+Promise.all(workers.map(worker => worker.terminate()))
+.then(() => {
+  console.log(results);
+})
+.catch(error => console.error(error));
+
+// worker.js file
+module.exports = function(task) {
+  return new Promise((resolve) => {
+    resolve(calculate(task));
+  });
+};

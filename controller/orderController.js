@@ -33,13 +33,11 @@ const newOrder = async (req, res) => {
         console.log(error.message)
     }
 }
-// Gettin single order
+// Gettin single orderx
 const getSingleOrder = async (req, res) => {
     const { id } = req.params;
-    console.log(id);
     try {
         const orders = await order.findById(id);
-        console.log(orders);
         if (!(orders)) {
             res.json({
                 success: false,
@@ -66,7 +64,7 @@ const myOrders = async (req, res) => {
         if (!response) {
             res.json({
                 success: false,
-                msg: "No odeered items"
+                msg: "No odered items"
             })
             return;
         }

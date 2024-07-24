@@ -13,35 +13,35 @@ const admin = (req, res) => {
 }
 const getProducts = async (req, res) => {
     const { page, filter } = req.query;
-    const limit = 3 ;
+    const limit = 12;
     const skip = (page - 1) * limit;
     const totalProducts = await productModel.countDocuments();
-    if(filter){
+    if (filter) {
         productModel.find()
-        .then((result) => {
-            let filteredResult = result;
+            .then((result) => {
+                let filteredResult = result;
 
-        if (filter) {
-            filteredResult = result.filter(item => {
-                return item.product.toLowerCase().includes(filter.toLowerCase());
-            });
-        }
+                if (filter) {
+                    filteredResult = result.filter(item => {
+                        return item.product.toLowerCase().includes(filter.toLowerCase());
+                    });
+                }
 
-        const totalFilteredProducts = filteredResult.length;
-        const paginatedResult = filteredResult.slice(skip, skip + limit);
+                const totalFilteredProducts = filteredResult.length;
+                const paginatedResult = filteredResult.slice(skip, skip + limit);
 
-        setTimeout(() => {
-            res.json({
-                success: true,
-                productCount: totalFilteredProducts,
-                totalPages: Math.ceil(totalFilteredProducts / limit),
-                result: paginatedResult
-            });
-        }, 1000);
-        })
-        .catch((err) => {
-            console.log(`error while fetching products ${err}`);
-        })
+                setTimeout(() => {
+                    res.json({
+                        success: true,
+                        productCount: totalFilteredProducts,
+                        totalPages: Math.ceil(totalFilteredProducts / limit),
+                        result: paginatedResult
+                    });
+                }, 1000);
+            })
+            .catch((err) => {
+                console.log(`error while fetching products ${err}`);
+            })
         return;
     }
     productModel.find()
@@ -52,7 +52,7 @@ const getProducts = async (req, res) => {
                 res.json({
                     succes: true,
                     productCount: totalProducts,
-                    totalPages : Math.ceil(totalProducts / limit),
+                    totalPages: Math.ceil(totalProducts / limit),
                     result
                 })
             }, 1000);

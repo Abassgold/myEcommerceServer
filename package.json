@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.2",
     "nodemailer": "^6.9.6",
+    "redis": "^4.6.15",
     "socket.io": "^4.7.2",
     "stripe": "^15.5.0",
     "validator": "^13.11.0"

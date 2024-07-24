@@ -49,12 +49,10 @@ const SignUp = async (req, res) => {
 }
 const SignIn = (req, res) => {
     let { email, password } = req.body
-    console.log(`the inputs are ${email} and ${password}`);
     userModel.findOne({ email: email.toLowerCase() })
         .then((user) => {
             if (!user) {
                 setTimeout(() => {
-                    console.log(`User not found`)
                     res.status(200).json({ msg: 'user not found', success: false })
                 }, 2000);
                 return;
@@ -99,8 +97,6 @@ const getDashboard = (req, res) => {
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
             res.json({ msg: `Log in first ${err.message}`, success: false })
-            console.log(token)
-            console.log(err.message);
             return;
         }
         console.log(decoded.email);
@@ -130,10 +126,8 @@ const logOut = (req, res) => {
 const forgotPassword = async function (req, res) {
     let { email } = req.body
     console.log(email)
-    // create one time link that is valid for 5mins
     try {
         const response = await userModel.findOne({ email: email.toLowerCase() })
-        console.log(response);
         if (!response) {
             res.status(200).json({
                 msg: 'Email is not registered',
@@ -154,8 +148,6 @@ const forgotPassword = async function (req, res) {
             success: true,
             link
         })
-        console.log({link});
-        console.log(token);
     } catch (error) {
         console.log(error.message);
     }
@@ -168,8 +160,6 @@ async function getRestPassword(req, res) {
         if (!response) {
             return res.status(200).json({ msg: 'No such user', success: false })
         }
-        console.log(response);
-        // console.log(dotToken);
         let newScreteLink = process.env.Secret + response.email + response.password + response._id
         console.log(newScreteLink);
         const decoded = await jwt.verify(dotToken, newScreteLink);
@@ -310,7 +300,7 @@ const editprofile = async (req, res) => {
     } catch (error) {
         console.log(`the error is ${error.message}`);
         if (error) {
-            res.status(200).json({ success: false })
+           return res.status(200).json({ success: true})
         }
     }
 }
@@ -325,5 +315,5 @@ module.exports = {
     forgotPassword,
     updatePassword,
     editprofile,
-    resetPassword
+    resetPassword,
 }

@@ -30,7 +30,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
 app.use('/user', userRoute)
 app.use('/admin', productRoute)
-app.use('/order', orderRoutes)
+app.use('/orders', orderRoutes)
 app.use('/payment', router)
 app.get('/reset-password/:id/:token', async (req, res) => {
 console.log(req.params);
