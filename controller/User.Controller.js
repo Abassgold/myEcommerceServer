@@ -54,7 +54,7 @@ const SignIn = (req, res) => {
             if (!user) {
                 setTimeout(() => {
                     res.status(200).json({ msg: 'user not found', success: false })
-                }, 2000);
+                }, 500);
                 return;
             }
             let userpassword = user.password
@@ -68,6 +68,7 @@ const SignIn = (req, res) => {
                                 const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                                 setTimeout(() => {
                                     console.log(`The token is ${token}`)
+                                    console.log(`the user is ${user}`)
                                     return res.status(200)
                                         .cookie('token', token, {
                                             expires: expiryDate,
