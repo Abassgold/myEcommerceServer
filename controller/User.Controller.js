@@ -67,8 +67,7 @@ const SignIn = (req, res) => {
                             if (token) {
                                 const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                                 setTimeout(() => {
-                                    console.log(`The token is ${token}`)
-                                    console.log(`the user is ${user}`)
+                                    console.log(`user signed in`)
                                     return res.status(200)
                                         .cookie('token', token, {
                                             expires: expiryDate,
