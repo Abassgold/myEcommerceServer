@@ -2,35 +2,17 @@ const order = require('../model/order.model')
 
 // create a new order
 const newOrder = async (req, res) => {
-    const {
-        orderItems,
-        shippingInfo,
-        itemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice,
-        paymentInfo,
-        user
-    } = req.body;
-    const orderModel = new order({
-        orderItems,
-        shippingInfo,
-        itemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice,
-        paymentInfo,
-        paidAt: Date.now(),
-        user
-    })
+    const orderModel = new order(req.body)
     try {
         const response = await orderModel.save()
-        res.json({
-            success: true,
-            response
-        })
-    } catch (error) {
-        console.log(error.message)
+    console.log(response);
+
+    res.json({
+        success: true,
+        response
+    })
+    } catch (err) {
+        console.log(err?.message);
     }
 }
 // Gettin single orderx
@@ -100,13 +82,13 @@ const getallOrders = async (req, res) => {
 const allOrders = async (req, res) => {
     try {
         const result = await order.findById(req.params.id)
-        if(result.orderStatus === 'Delivered'){
+        if (result.orderStatus === 'Delivered') {
             res.json({
                 success: false,
                 msg: 'You have already delivered this order'
             })
             return;
-        } 
+        }
         // result.orderItems.map(async (items) =>{
         //     await
         // })
@@ -121,31 +103,31 @@ const allOrders = async (req, res) => {
         console.log(error.message)
     }
 }
-async function updateStock(id, quantity){
+async function updateStock(id, quantity) {
     const product = await Product.findById(id);
     product.s
 }
 // Delete order by Admin using oder ID
-const deleteOrder = async (req, res) =>{
+const deleteOrder = async (req, res) => {
     try {
         const result = await order.findById(req.params.id)
-    if(!result){
+        if (!result) {
+            res.json({
+                success: false,
+                msg: 'There is no Order with such ID'
+            })
+            return;
+        }
+        await order.findByIdAndDelete(req.params.id)
+        res.json({
+            success: true,
+            msg: 'Order has been removed'
+        })
+    } catch (error) {
         res.json({
             success: false,
-            msg: 'There is no Order with such ID'
+            msg: error.message
         })
-        return;
-    }
-    await order.findByIdAndDelete(req.params.id)
-    res.json({
-        success: true, 
-        msg: 'Order has been removed'
-    })
-    } catch (error) {
-       res.json({
-        success: false,
-        msg: error.message
-       }) 
     }
 }
 module.exports = {

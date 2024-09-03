@@ -11,8 +11,6 @@ const productSchema = new mongoose.Schema({
     price:  {
         type: Number,
         required: [true, 'pls enter the product price'],
-        maxLength: [5, 'Product name cannot exceed 5 characters']
-        
     }, 
     description: {
         type: String,
@@ -62,7 +60,6 @@ const productSchema = new mongoose.Schema({
     stock:{
         type: Number,
         required:[true, 'Pls enter product stock'],
-        maxLength: [5, 'Product name cannot exceed 5 characters'],
         default: 0
     },
     numOfReviews:{
