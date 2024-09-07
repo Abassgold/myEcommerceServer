@@ -40,9 +40,12 @@ const getSingleOrder = async (req, res) => {
 
 /// get login user order
 const myOrders = async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.params;
+    
     try {
-        const response = await order.find({ user: id })
+        const response = await order.find({ userId: id })
+        console.log(response);
+        
         if (!response) {
             res.json({
                 success: false,

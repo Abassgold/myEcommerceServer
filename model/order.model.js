@@ -32,8 +32,11 @@ const oderSchema = new mongoose.Schema({
     }],
 
     taxPrice: { type: Number, required: true },
-    itemsPrice: { type: String, required: true },
+    itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
+    orderStatus: { type: String, required: true, enums: ['processing', 'delivered'], default: 'processing' },
+    // orderStatus
+    // "Processing"
 
     // Date and Time
     date: { type: String, required: true },
@@ -47,9 +50,10 @@ const oderSchema = new mongoose.Schema({
         },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-        firstName: {type: String, required: true },
+        firstName: { type: String, required: true },
         lastName: { type: String, required: true },
-    }
+    },
+    userId:{ type: mongoose.Schema.Types.ObjectId, required: true }
 }, {
     timestamps: true // Automatically adds createdAt and updatedAt fields
 });
