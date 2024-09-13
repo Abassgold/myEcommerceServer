@@ -34,7 +34,7 @@ const oderSchema = new mongoose.Schema({
     taxPrice: { type: Number, required: true },
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
-    orderStatus: { type: String, required: true, enums: ['processing', 'delivered'], default: 'processing' },
+    orderStatus: { type: String, required: true, enums: ['processing', 'delivered'], default: 'delivered' },
     // orderStatus
     // "Processing"
 
@@ -48,6 +48,7 @@ const oderSchema = new mongoose.Schema({
             public_id: { type: String },
             url: { type: String }
         },
+        email: { type: String, required: true},
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         _id: { type: mongoose.Schema.Types.ObjectId, required: true },
         firstName: { type: String, required: true },

@@ -53,7 +53,7 @@ const SignIn = (req, res) => {
         .then((user) => {
             if (!user) {
                 setTimeout(() => {
-                    res.status(200).json({ msg: 'user not found', success: false })
+                    res.status(200).json({ msg: "There's no account registered under this email", success: false })
                 }, 500);
                 return;
             }
@@ -66,23 +66,22 @@ const SignIn = (req, res) => {
                             if (err) return console.log(err)
                             if (token) {
                                 const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                res.cookie("token", token, {
+                                    expires: expiryDate,
+                                    httpOnly: true
+                                })
                                 setTimeout(() => {
-                                    console.log(`user signed in`)
                                     return res.status(200)
-                                        .cookie('token', token, {
-                                            expires: expiryDate,
-                                            httpOnly: true
-                                        })
-                                        .json({ msg: 'Login successful', token, success: true, user });
-                                }, 2000);
+                                    .json({ msg: 'Login successful', token, success: true, user });
+                                }, 200);
                             }
                         })
                     }
                     else {
                         setTimeout(() => {
                             console.log(`Incorrect password`)
-                            res.status(400).json({ msg: 'Incorrect password', success: false })
-                        }, 2000);
+                            res.json({ msg: 'Incorrect password', success: false })
+                        }, 200);
                         return;
                     }
                 }
@@ -93,7 +92,6 @@ const SignIn = (req, res) => {
 const getDashboard = (req, res) => {
     const { authorization } = req.headers;
     let token = authorization.split(' ')[1];
-    console.log(token);
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
             res.json({ msg: `Log in first ${err.message}`, success: false })
@@ -164,7 +162,7 @@ async function getRestPassword(req, res) {
         console.log(newScreteLink);
         const decoded = await jwt.verify(dotToken, newScreteLink);
         console.log(decoded);
-        if(decoded){
+        if (decoded) {
             res.status(200).json({
                 success: true,
             })
@@ -172,7 +170,7 @@ async function getRestPassword(req, res) {
         }
     } catch (error) {
         console.log(`The mess ofjj ${error.message}`);
-       return res.status(200).json({
+        return res.status(200).json({
             msg: 'The link is expired. Please try again',
             error: error.message,
             success: false
@@ -181,12 +179,12 @@ async function getRestPassword(req, res) {
 }
 async function resetPassword(req, res) {
     try {
-    const { password, confirmPassword } = req.body;
-    const {id, token} = req.params;
+        const { password, confirmPassword } = req.body;
+        const { id, token } = req.params;
 
         if (!(password && confirmPassword)) {
             console.log('Fill in all emptyspaces ');
-            res.status(200).json({success: false, msg: `Fill in empty spaces`});
+            res.status(200).json({ success: false, msg: `Fill in empty spaces` });
             return;
         }
         const trimmedBody = {};
@@ -196,28 +194,28 @@ async function resetPassword(req, res) {
         console.log(trimmedBody);
         console.log(req.params);
         if (trimmedBody.password === '') {
-            res.status(200).json({msg : 'Space cannot be empty', success: false})
+            res.status(200).json({ msg: 'Space cannot be empty', success: false })
             return console.log('Space cannot be empty');
         }
         if (trimmedBody.confirmPassword === '') {
-            res.status(200).json({msg : 'Space cannot be empty', success : false})
+            res.status(200).json({ msg: 'Space cannot be empty', success: false })
             return console.log('Space cannot be empty');
         }
         if (!(trimmedBody.password === trimmedBody.confirmPassword)) {
-            res.status(200).json({msg : 'Password does not match', success: false})
+            res.status(200).json({ msg: 'Password does not match', success: false })
             return console.log('Password does not match')
         }
-        const  response = await userModel.findById(id);
-        if(response){
+        const response = await userModel.findById(id);
+        if (response) {
             const newSecretLink = process.env.Secret + response.email + response.password + response._id;
             const decoded = await jwt.verify(token, newSecretLink);
             console.log(decoded);
-        
+
             // Update the user's password
             const hashedPassword = await bcrypt.hash(confirmPassword, 10);
-            
-            const updatePassword =  await userModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
-        
+
+            const updatePassword = await userModel.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+
             console.log(updatePassword);
         }
         else {
@@ -226,7 +224,7 @@ async function resetPassword(req, res) {
 
     } catch (err) {
         console.log(` the err is ${err.message}`);
-        res.status(200).json({ msg : err.message, success : false});
+        res.status(200).json({ msg: err.message, success: false });
     }
 }
 const updatePassword = async (req, res) => {
@@ -300,7 +298,7 @@ const editprofile = async (req, res) => {
     } catch (error) {
         console.log(`the error is ${error.message}`);
         if (error) {
-           return res.status(200).json({ success: true})
+            return res.status(200).json({ success: true })
         }
     }
 }

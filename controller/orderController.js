@@ -1,5 +1,4 @@
 const order = require('../model/order.model')
-
 // create a new order
 const newOrder = async (req, res) => {
     const orderModel = new order(req.body)
@@ -40,12 +39,14 @@ const getSingleOrder = async (req, res) => {
 
 /// get login user order
 const myOrders = async (req, res) => {
-    const { id } = req.params;
+   
+
     
+    const { id } = req.params;
+    let cok = req.cookies
+    console.log(cok);
     try {
         const response = await order.find({ userId: id })
-        console.log(response);
-        
         if (!response) {
             res.json({
                 success: false,
@@ -63,23 +64,25 @@ const myOrders = async (req, res) => {
 }
 // get all orders from ADMIN
 const getallOrders = async (req, res) => {
-    try {
-        const result = await order.find()
-        let totalAmount = 0;
-        result.map((amount) => {
-            totalAmount += amount.totalPrice;
-        })
-        res.json({
-            success: true,
-            totalAmount,
-            result,
-        })
-    } catch (error) {
-        res.json({
-            success: false,
-            error: error.message
-        })
-    }
+  
+    
+    // try {
+    //     const result = await order.find()
+    //     let totalAmount = 0;
+    //     result.map((amount) => {
+    //         totalAmount += amount.totalPrice;
+    //     })
+    //     res.json({
+    //         success: true,
+    //         totalAmount,
+    //         result,
+    //     })
+    // } catch (error) {
+    //     res.json({
+    //         success: false,
+    //         error: error.message
+    //     })
+    // }
 }
 // update and process orders using their id by admin
 const allOrders = async (req, res) => {
