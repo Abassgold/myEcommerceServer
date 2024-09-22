@@ -34,25 +34,22 @@ const admin = async (req, res) => {
             stock
         })
         const savedProduct = await products.save();
-        console.log(results);
-        console.log(savedProduct);
         res.status(200).json({
             success: true
         })
     } catch (error) {
         console.log(error?.message);
     }
-
-
-    // console.log(product);
-    // product.save()
-    //     .then((result) => {
-    //         console.log('product saved');
-    //         res.json(result)
-    //     })
-    //     .catch(err => {
-    //         console.log('product cannot save' + err);
-    //     })
+}
+const adminGetProducts = async(req, res)=>{
+    try {
+        const totalProducts = await productModel.find()
+        res.status(200).json({
+            result: totalProducts
+        })
+    } catch (error) {
+        console.log(error?.message);
+    }
 }
 const getProducts = async (req, res) => {
     const { page, filter } = req.query;
@@ -69,10 +66,8 @@ const getProducts = async (req, res) => {
                         return item.product.toLowerCase().includes(filter.toLowerCase());
                     });
                 }
-
                 const totalFilteredProducts = filteredResult.length;
                 const paginatedResult = filteredResult.slice(skip, skip + limit);
-
                 setTimeout(() => {
                     res.json({
                         success: true,
@@ -104,12 +99,10 @@ const getProducts = async (req, res) => {
             console.log(`error while fetching products ${err}`);
         })
 };
-
 function getSingleProduct(req, res) {
     const { id } = req.params
     productModel.findById(id)
         .then((result) => {
-            console.log(result);
             if (!result) {
                 res.status(404).json({
                     success: false,
@@ -130,7 +123,6 @@ function getSingleProduct(req, res) {
 };
 const updateProduct = async (req, res) => {
     const { id } = req.params
-
     try {
         const response = await productModel.findByIdAndUpdate(id, req.body)
         res.json(response)
@@ -143,14 +135,12 @@ const deleteProduct = async function (req, res) {
     const { id } = req.params
     const product = await productModel.findById(id)
     if (!product) {
-        console.log(`No result found ${product}`);
         res.json({ msg: `No result found` })
         return;
     }
     try {
         const response = await productModel.findByIdAndDelete(id)
         res.status(200).json({ msg: `Product deleted successfully` })
-        console.log(`product deleted successfully`);
     } catch (err) {
         console.log(`Something went wrong ${err}`);
         res.status(500).json({ msg: `Something went wrong` })
@@ -166,9 +156,7 @@ const createproductReview = async (req, res) => {
         rating: Number(rating),
         comment
     }
-    console.log(review)
     const product = await productModel.findById(productId)
-    console.log(product);
     const isReviewed = product.reviews.find(review => review.user.toString() === userId.toString());
     if (isReviewed) {
         product.reviews.map((review) => {
@@ -219,4 +207,5 @@ module.exports = {
     deleteProduct,
     createproductReview,
     deleteProductReview,
+    adminGetProducts
 }
