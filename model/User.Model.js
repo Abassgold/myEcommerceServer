@@ -6,26 +6,27 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-      },
+    },
     password: {
-        type: String, 
-    }, 
-    photo:{
-            public_id:{
-                type:String,
-                required: true
-            },
-            url:{
-                type:String,
-                required: true
-            }
+        type: String,
+    },
+    photo: {
+        public_id: {
+            type: String,
+        },
+        url: {
+            type: String,
+            required: true,
+            default: 'https://t4.ftcdn.net/jpg/01/97/15/87/360_F_197158744_1NBB1dEAHV2j9xETSUClYqZo7SEadToU.jpg'
+        }
     },
     role: {
-        type:String,
+        type: String,
+        enum: ['user', 'admin'],
         default: 'user',
     }
-}, {timestamps: true})
-userSchema.pre('save', function(next){
+}, { timestamps: true })
+userSchema.pre('save', function (next) {
     this.email = this.email.toLowerCase();
     next();
 

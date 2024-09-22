@@ -1,15 +1,58 @@
 const productModel = require('../model/Product.model')
-const admin = (req, res) => {
-    const product = new productModel(req.body)
-    console.log(product);
-    product.save()
-        .then((result) => {
-            console.log('product saved');
-            res.json(result)
+const cloudinary = require('cloudinary')
+cloudinary.config({
+    cloud_name: process.env.cloud_name,
+    api_key: process.env.api_key,
+    api_secret: process.env.api_secret
+});
+const admin = async (req, res) => {
+    const { 
+        product,
+        price,
+        description,
+        images,
+        category,
+        seller,
+        stock
+    } = req.body;
+    try {
+
+        const results = await Promise.all(images.map(async (image) => {
+            const result = await cloudinary.v2.uploader.upload(image);
+            return {
+                public_id: result?.public_id,
+                url: result?.url
+            };
+        }));
+        const products = new productModel({
+            product,
+            price: price.toFixed(0),
+            description,
+            images: [...results],
+            category,
+            seller,
+            stock
         })
-        .catch(err => {
-            console.log('product cannot save' + err);
+        const savedProduct = await products.save();
+        console.log(results);
+        console.log(savedProduct);
+        res.status(200).json({
+            success: true
         })
+    } catch (error) {
+        console.log(error?.message);
+    }
+
+
+    // console.log(product);
+    // product.save()
+    //     .then((result) => {
+    //         console.log('product saved');
+    //         res.json(result)
+    //     })
+    //     .catch(err => {
+    //         console.log('product cannot save' + err);
+    //     })
 }
 const getProducts = async (req, res) => {
     const { page, filter } = req.query;

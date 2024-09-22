@@ -5,46 +5,29 @@ const jwt = require('jsonwebtoken')
 const cloudinary = require('cloudinary')
 
 require('dotenv').config()
-cloudinary.config({
-    cloud_name: process.env.cloud_name,
-    api_key: process.env.api_key,
-    api_secret: process.env.api_secret
-});
 const SignUp = async (req, res) => {
-    let { firstName, lastName, email, password, photo } = req.body
+    let { firstName, lastName, email, password, } = req.body
     const found = await userModel.findOne({ email: req.body.email.toLowerCase() })
-    console.log(`the result is ${found}`);
     if (found) {
         console.log(`Email already been register with another account`);
         return res.status(200).json({ msg: `Email already registered with another account`, success: false })
     }
     bcrypt.hash(password, 10, (err, hashed) => {
         if (err) return console.log(`password cannot hash ${err}`)
-        cloudinary.v2.uploader.upload(photo, (err, result) => {
-            if (err) return console.log(`File could not be uploaded`);
-            console.log(result);
-            let myFile = result.secure_url
-            const model = new userModel({
-                firstName,
-                lastName,
-                email: email.toLowerCase(),
-                password: hashed,
-                photo: {
-                    public_id: result.public_id,
-                    url: myFile
-                }
-            })
-
-            model.save()
-                .then(e => {
-                    console.log(`saved to database, ${hashed}`)
-                    res.status(200).json({ success: true })
-                })
-                .catch((err) => {
-                    console.log('cannot save to database' + err);
-                    res.status(400)
-                })
+        const model = new userModel({
+            firstName,
+            lastName,
+            email: email.toLowerCase(),
+            password: hashed,
         })
+        model.save()
+            .then(e => {
+                res.status(200).json({ success: true })
+            })
+            .catch((err) => {
+                console.log('cannot save to database' + err);
+                res.status(400)
+            })
     })
 }
 const SignIn = (req, res) => {
@@ -72,7 +55,7 @@ const SignIn = (req, res) => {
                                 })
                                 setTimeout(() => {
                                     return res.status(200)
-                                    .json({ msg: 'Login successful', token, success: true, user });
+                                        .json({ msg: 'Login successful', token, success: true, user });
                                 }, 200);
                             }
                         })
