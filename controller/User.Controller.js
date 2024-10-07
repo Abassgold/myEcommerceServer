@@ -35,9 +35,7 @@ const SignIn = (req, res) => {
     userModel.findOne({ email: email.toLowerCase() })
         .then((user) => {
             if (!user) {
-                setTimeout(() => {
-                    res.status(200).json({ msg: "There's no account registered under this email", success: false })
-                }, 500);
+                res.status(200).json({ msg: "There's no account registered under this email", success: false })
                 return;
             }
             let userpassword = user.password
@@ -45,26 +43,25 @@ const SignIn = (req, res) => {
                 if (err) return console.log(`Error while comapring password ${err}`)
                 else {
                     if (isMatch) {
-                        jwt.sign({ email: email.toLowerCase() }, process.env.Secret, { expiresIn: '24h' }, (err, token) => {
+                        jwt.sign({ email: email.toLowerCase() }, process.env.Secret, (err, token) => {
                             if (err) return console.log(err)
                             if (token) {
                                 const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-                                res.cookie("token", token, {
+                                res.cookie('token', token, {
                                     expires: expiryDate,
-                                    httpOnly: true
-                                })
-                                setTimeout(() => {
-                                    return res.status(200)
-                                        .json({ msg: 'Login successful', token, success: true, user });
-                                }, 200);
+                                    httpOnly: true,
+                                    sameSite: 'strict',
+                                    maxAge: 3600000 * 24 * 30, // Cookie expiration time set to 30 days
+                                });
+
+                                return res.status(200).json({ msg: 'Login successful', token, success: true, user });
+
                             }
                         })
                     }
                     else {
-                        setTimeout(() => {
-                            console.log(`Incorrect password`)
-                            res.json({ msg: 'Incorrect password', success: false })
-                        }, 200);
+                        console.log(`Incorrect password`)
+                        res.json({ msg: 'Incorrect password', success: false })
                         return;
                     }
                 }
@@ -73,6 +70,9 @@ const SignIn = (req, res) => {
 }
 
 const getDashboard = (req, res) => {
+    const tokensi = req.cookies;
+    console.log(tokensi);
+
     const { authorization } = req.headers;
     let token = authorization.split(' ')[1];
     jwt.verify(token, process.env.Secret, (err, decoded) => {

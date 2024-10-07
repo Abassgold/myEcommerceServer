@@ -42,8 +42,9 @@ const admin = async (req, res) => {
     }
 }
 const adminGetProducts = async(req, res)=>{
+    console.log('admin get product')
     try {
-        const totalProducts = await productModel.find()
+        const totalProducts = await productModel.find().sort({createdAt: -1})
         res.status(200).json({
             result: totalProducts
         })

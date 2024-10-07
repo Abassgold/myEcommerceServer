@@ -22,7 +22,10 @@ mongoose.connect(URI).then(e => {
 }).catch(e => {
     console.log(`Error occured while connecting to the database, ${e}`);
 })
-app.use(cors())
+app.use(cors({
+    origin: process.env.origin,
+    credentials: true,
+}))
 app.use(cookieParser())
 // register view engine
 app.set('view engine', 'ejs')

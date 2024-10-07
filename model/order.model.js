@@ -34,7 +34,7 @@ const oderSchema = new mongoose.Schema({
     taxPrice: { type: Number, required: true },
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
-    orderStatus: { type: String, required: true, enums: ['processing', 'delivered'], default: 'delivered' },
+    orderStatus: { type: String, required: true, enums: ['processing', 'delivered'], default: 'processing' },
     // orderStatus
     // "Processing"
 
