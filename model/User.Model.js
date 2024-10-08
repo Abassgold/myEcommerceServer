@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
+        selected: false
     },
     photo: {
         public_id: {

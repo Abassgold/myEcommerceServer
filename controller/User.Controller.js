@@ -34,6 +34,8 @@ const SignIn = (req, res) => {
     let { email, password } = req.body
     userModel.findOne({ email: email.toLowerCase() })
         .then((user) => {
+            const userInfo = user.toObject();  
+            delete userInfo.password; 
             if (!user) {
                 res.status(200).json({ msg: "There's no account registered under this email", success: false })
                 return;
@@ -53,9 +55,7 @@ const SignIn = (req, res) => {
                                     sameSite: 'strict',
                                     maxAge: 3600000 * 24 * 30, // Cookie expiration time set to 30 days
                                 });
-
-                                return res.status(200).json({ msg: 'Login successful', token, success: true, user });
-
+                                return res.status(200).json({ msg: 'Login successful', userInfo, success: true, user });
                             }
                         })
                     }
@@ -70,11 +70,8 @@ const SignIn = (req, res) => {
 }
 
 const getDashboard = (req, res) => {
-    const tokensi = req.cookies;
-    console.log(tokensi);
-
-    const { authorization } = req.headers;
-    let token = authorization.split(' ')[1];
+    const token = req.cookies.token;
+    console.log(token);
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
             res.json({ msg: `Log in first ${err.message}`, success: false })
@@ -90,20 +87,17 @@ const getDashboard = (req, res) => {
             })
     })
 }
-const logOut = (req, res) => {
-    console.log(req.cookie.token);
-    res.clearCookie('token',
-        {
-            httpOnly: true
-        })
-    res.status(200)
-        .json({
-            succes: true,
-            msg: 'Logout successful',
-            cook: req.cookies
-        })
-    console.log(req.cookies.token);
-}
+const logOut = async (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,  
+        sameSite: 'strict',
+        expires: new Date(0)
+    });
+    res.status(200).json({
+        success: true,
+    });
+};
+
 const forgotPassword = async function (req, res) {
     let { email } = req.body
     console.log(email)
