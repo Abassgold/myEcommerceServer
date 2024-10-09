@@ -34,8 +34,8 @@ const SignIn = (req, res) => {
     let { email, password } = req.body
     userModel.findOne({ email: email.toLowerCase() })
         .then((user) => {
-            const userInfo = user.toObject();  
-            delete userInfo.password; 
+            const userInfo = user.toObject();
+            delete userInfo.password;
             if (!user) {
                 res.status(200).json({ msg: "There's no account registered under this email", success: false })
                 return;
@@ -71,25 +71,24 @@ const SignIn = (req, res) => {
 
 const getDashboard = (req, res) => {
     const token = req.cookies.token;
-    console.log(token);
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
             res.json({ msg: `Log in first ${err.message}`, success: false })
             return;
         }
-        console.log(decoded.email);
         userModel.findOne({ email: decoded.email })
             .then((user) => {
-                res.json({ user, success: true });
-            })
-            .catch((err) => {
+                const userInfo = user.toObject();
+                delete userInfo.password;
+                res.json({ userInfo, success: true });
+            }).catch((err) => {
                 console.log(`error while finding user ${err.message}`);
             })
     })
 }
 const logOut = async (req, res) => {
     res.clearCookie('token', {
-        httpOnly: true,  
+        httpOnly: true,
         sameSite: 'strict',
         expires: new Date(0)
     });
