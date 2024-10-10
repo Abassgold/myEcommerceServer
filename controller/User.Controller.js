@@ -53,7 +53,7 @@ const SignIn = (req, res) => {
                                     expires: expiryDate,
                                     httpOnly: true,
                                     secure: true,
-                                    sameSite: 'lax',
+                                    sameSite: 'none',
                                     maxAge: 3600000 * 24 * 30, // Cookie expiration time set to 30 days
                                 });
                                 return res.status(200).json({ msg: 'Login successful', userInfo, success: true, user });
@@ -90,7 +90,7 @@ const getDashboard = (req, res) => {
 const logOut = async (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         secure: true,
         expires: new Date(0)
     });
