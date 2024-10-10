@@ -71,6 +71,7 @@ const SignIn = (req, res) => {
 
 const getDashboard = (req, res) => {
     const token = req.cookies.token;
+    console.log('the token is' + token);
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
             res.json({ msg: `Log in first ${err.message}`, success: false })
