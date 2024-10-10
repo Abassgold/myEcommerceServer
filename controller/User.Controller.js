@@ -52,7 +52,8 @@ const SignIn = (req, res) => {
                                 res.cookie('token', token, {
                                     expires: expiryDate,
                                     httpOnly: true,
-                                    sameSite: 'strict',
+                                    secure: true,
+                                    sameSite: 'lax',
                                     maxAge: 3600000 * 24 * 30, // Cookie expiration time set to 30 days
                                 });
                                 return res.status(200).json({ msg: 'Login successful', userInfo, success: true, user });
@@ -71,7 +72,6 @@ const SignIn = (req, res) => {
 
 const getDashboard = (req, res) => {
     const token = req.cookies.token;
-    console.log('the token is' + token);
     jwt.verify(token, process.env.Secret, (err, decoded) => {
         if (err) {
             res.json({ msg: `Log in first ${err.message}`, success: false })
@@ -90,7 +90,8 @@ const getDashboard = (req, res) => {
 const logOut = async (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
+        secure: true,
         expires: new Date(0)
     });
     res.status(200).json({
